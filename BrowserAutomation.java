@@ -7,6 +7,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 public class BrowserAutomation {
     private static WebDriver driver;
@@ -89,6 +91,7 @@ public class BrowserAutomation {
             Select animalSelect = new Select(sortedList);
             animalSelect.selectByVisibleText("Dog");
 
+            // Date picker 1
             WebElement date1 = driver.findElement(By.xpath("//input[@id=\"datepicker\"]"));
             date1.click();
             Thread.sleep(3000);
@@ -119,11 +122,52 @@ public class BrowserAutomation {
         System.out.println("Selected Date: " + selectedDate);
         Thread.sleep(3000);
 
-         // WebElement date2 = driver.findElement(By.xpath("//input[@id=\"txtDate\"]"));
-            // wait.until(ExpectedConditions.visibilityOf(date2));
-            // date2.click();
+    // Date picker 2
+    String date = "11/11/2017";
+    String[] parts = date.split("/");
+    String expDay = parts[0];
+    String expMonth = parts[1];
+    String expYear = parts[2];
 
-    
+    WebElement dateInput = driver.findElement(By.id("txtDate")); 
+    dateInput.click();
+    Thread.sleep(2000);
+
+    By monthDropdown = By.className("ui-datepicker-month");
+    By yearDropdown = By.className("ui-datepicker-year");
+
+    Select yearSelect = new Select(driver.findElement(yearDropdown));
+    yearSelect.selectByVisibleText(expYear);
+
+    String[] months = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+    String monthName = months[Integer.parseInt(expMonth) - 1];
+
+    Select monthSelect = new Select(driver.findElement(monthDropdown));
+    monthSelect.selectByVisibleText(monthName);
+        Thread.sleep(2000);
+    List<WebElement> days = driver.findElements(By.xpath("//table[@class='ui-datepicker-calendar']//a"));
+    for (WebElement d : days) {
+        if (d.getText().equals(expDay)) {
+            d.click();
+            Thread.sleep(2000);
+            break;
+        }
+    }
+// Date picker 3
+WebElement dateInput1 = driver.findElement(By.xpath("//div[@class=\"date-picker-box\"]//input[@id='start-date']"));
+JavascriptExecutor js = (JavascriptExecutor) driver;
+js.executeScript("arguments[0].click();", dateInput1);
+String dateValue1 = "2020-11-11"; 
+js.executeScript("arguments[0].value = arguments[1];", dateInput1, dateValue1);
+Thread.sleep(3000);
+WebElement dateInput2 = driver.findElement(By.xpath("//div[@class=\"date-picker-box\"]//input[@id='end-date']"));
+js.executeScript("arguments[0].click();", dateInput2);
+String dateValue2 = "2020-11-12"; 
+js.executeScript("arguments[0].value = arguments[1];", dateInput2, dateValue2);
+WebElement submitBtn = driver.findElement(By.xpath("//div[@class=\"date-picker-box\"]//button[@class='submit-btn']"));
+submitBtn.click();
+Thread.sleep(3000);
+
 
         } catch (TimeoutException te) {
             throw new RuntimeException("Timeout while filling form: " + te.getMessage());
