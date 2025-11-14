@@ -8,7 +8,9 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BrowserAutomation {
     private static WebDriver driver;
@@ -36,7 +38,7 @@ public class BrowserAutomation {
 
             driver.get(url);
             wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete'"));
-            
+
             System.out.println("Opened: " + url);
             System.out.println("Page title: " + driver.getTitle() + "--------------------------------");
         } catch (TimeoutException te) {
@@ -51,25 +53,21 @@ public class BrowserAutomation {
             WebElement nameTextBox = waitAndLocate("//input[@id='name']", "name field");
             sendKeysWithVerification(nameTextBox, "KingOOstring", "name");
             nameTextBox.sendKeys(Keys.TAB);
-                Thread.sleep(300); 
+            Thread.sleep(300);
 
             WebElement emailTextBox = waitAndLocate("//input[@id='email']", "email field");
             sendKeysWithVerification(emailTextBox, "abcd@gamail.con", "email");
-            // Thread.sleep(3000); 
-
+      
             WebElement phoneTextBox = waitAndLocate("//input[@id='phone']", "phone field");
             sendKeysWithVerification(phoneTextBox, "1234567890", "phone");
-            // Thread.sleep(3000); 
-
+        
             WebElement addressTextBox = waitAndLocate("//textarea[@id='textarea']", "address field");
             sendKeysWithVerification(addressTextBox, "123, ABCD Street, XYZ-987654", "address");
-            // Thread.sleep(3000); 
 
             WebElement genderRadioButton = waitAndLocate(
-                "//div[@class='form-check form-check-inline']//label[text()='Male']", 
-                "gender radio button");
+                    "//div[@class='form-check form-check-inline']//label[text()='Male']",
+                    "gender radio button");
             clickWithVerification(genderRadioButton, "gender selection");
-            // Thread.sleep(3000); 
             System.out.println("Form filled successfully");
 
             WebElement countryDropDown = waitAndLocate("//select[@id='country']", "country dropdown");
@@ -78,7 +76,6 @@ public class BrowserAutomation {
             Select dropdown = new Select(countryDropDown);
             dropdown.selectByVisibleText("France");
             System.out.println("Selected country: France");
-            // Thread.sleep(3000); 
 
             WebElement colorElement = waitAndLocate("//select[@id='colors']", "colors list");
             Select colorSelect = new Select(colorElement);
@@ -95,79 +92,193 @@ public class BrowserAutomation {
             WebElement date1 = driver.findElement(By.xpath("//input[@id=\"datepicker\"]"));
             date1.click();
             Thread.sleep(3000);
-        String targetYear = "2024";
-        String targetMonth = "October";
-        String targetDay = "15";
+            String targetYear = "2024";
+            String targetMonth = "October";
+            String targetDay = "15";
 
-        while (true) {
-            String displayedMonth = driver.findElement(By.className("ui-datepicker-month")).getText();
-            String displayedYear = driver.findElement(By.className("ui-datepicker-year")).getText();
+            while (true) {
+                String displayedMonth = driver.findElement(By.className("ui-datepicker-month")).getText();
+                String displayedYear = driver.findElement(By.className("ui-datepicker-year")).getText();
 
-            if (displayedMonth.equals(targetMonth) && displayedYear.equals(targetYear)) {
-                break;
+                if (displayedMonth.equals(targetMonth) && displayedYear.equals(targetYear)) {
+                    break;
+                }
+                int displayedY = Integer.parseInt(displayedYear);
+                int targetY = Integer.parseInt(targetYear);
+
+                if (displayedY > targetY ||
+                        (displayedY == targetY && monthToNumber(displayedMonth) > monthToNumber(targetMonth))) {
+                    driver.findElement(By.xpath("//a[@data-handler='prev']")).click();
+                } else {
+                    driver.findElement(By.xpath("//a[@data-handler='next']")).click();
+                }
             }
-            int displayedY = Integer.parseInt(displayedYear);
-            int targetY = Integer.parseInt(targetYear);
+            driver.findElement(By.xpath("//table[@class='ui-datepicker-calendar']//a[text()='" + targetDay + "']"))
+                    .click();
 
-            if (displayedY > targetY || 
-               (displayedY == targetY && monthToNumber(displayedMonth) > monthToNumber(targetMonth))) {
-                driver.findElement(By.xpath("//a[@data-handler='prev']")).click();
-            } else {
-                driver.findElement(By.xpath("//a[@data-handler='next']")).click();
+            String selectedDate = date1.getAttribute("value");
+            System.out.println("Selected Date: " + selectedDate);
+            Thread.sleep(1000);
+
+            // Date picker 2
+            String date = "11/11/2017";
+            String[] parts = date.split("/");
+            String expDay = parts[0];
+            String expMonth = parts[1];
+            String expYear = parts[2];
+
+            WebElement dateInput = driver.findElement(By.id("txtDate"));
+            dateInput.click();
+            Thread.sleep(1000);
+
+            By monthDropdown = By.className("ui-datepicker-month");
+            By yearDropdown = By.className("ui-datepicker-year");
+
+            Select yearSelect = new Select(driver.findElement(yearDropdown));
+            yearSelect.selectByVisibleText(expYear);
+
+            String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+            String monthName = months[Integer.parseInt(expMonth) - 1];
+
+            Select monthSelect = new Select(driver.findElement(monthDropdown));
+            monthSelect.selectByVisibleText(monthName);
+            Thread.sleep(1000);
+            List<WebElement> days = driver.findElements(By.xpath("//table[@class='ui-datepicker-calendar']//a"));
+            for (WebElement d : days) {
+                if (d.getText().equals(expDay)) {
+                    d.click();
+                    Thread.sleep(1000);
+                    break;
+                }
             }
-        }
-        driver.findElement(By.xpath("//table[@class='ui-datepicker-calendar']//a[text()='" + targetDay + "']")).click();
+            // Date picker 3
+            WebElement dateInput1 = driver
+                    .findElement(By.xpath("//div[@class=\"date-picker-box\"]//input[@id='start-date']"));
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            js.executeScript("arguments[0].click();", dateInput1);
+            String dateValue1 = "2020-11-11";
+            js.executeScript("arguments[0].value = arguments[1];", dateInput1, dateValue1);
+            Thread.sleep(3000);
+            WebElement dateInput2 = driver
+                    .findElement(By.xpath("//div[@class=\"date-picker-box\"]//input[@id='end-date']"));
+            js.executeScript("arguments[0].click();", dateInput2);
+            String dateValue2 = "2020-11-12";
+            js.executeScript("arguments[0].value = arguments[1];", dateInput2, dateValue2);
+            WebElement submitBtn = driver
+                    .findElement(By.xpath("//div[@class=\"date-picker-box\"]//button[@class='submit-btn']"));
+            submitBtn.click();
+            Thread.sleep(3000);
 
-        String selectedDate = date1.getAttribute("value");
-        System.out.println("Selected Date: " + selectedDate);
-        Thread.sleep(3000);
+            // Static Web Table
+            String targetTextInTable = "Animesh";
 
-    // Date picker 2
-    String date = "11/11/2017";
-    String[] parts = date.split("/");
-    String expDay = parts[0];
-    String expMonth = parts[1];
-    String expYear = parts[2];
+            WebElement table1 = waitAndLocate("//table[@name='BookTable']", "bool table");
+            List<WebElement> headers = table1.findElements(By.tagName("th"));
+            for (WebElement header : headers) {
+                System.out.println("header: " + header.getText());
+            }
+            List<WebElement> allrows = table1.findElements(By.tagName("tr"));
+            for (WebElement row : allrows) {
+                List<WebElement> cells = row.findElements(By.tagName("td"));
+                for (WebElement cell : cells) {
+                    System.out.print(cell.getText() + " || ");
+                    if (cell.getText().equals(targetTextInTable)) {
+                        System.out.println("\n -- Found the target text: " + targetTextInTable);
+                    }
+                }
+                System.out.println();
+            }
+            // Dynamic Web Table
+            String targetTextInDynamicTable = "Chrome";
+            WebElement dynamicTable = waitAndLocate("//table[@id='taskTable']", "dynamic table");
+            List<WebElement> dynamicRows = dynamicTable.findElements(By.tagName("tr"));
+            for (WebElement row : dynamicRows) {
+                List<WebElement> cells = row.findElements(By.tagName("td"));
+                for (WebElement cell : cells) {
+                    System.out.print(cell.getText() + " || ");
+                    if (cell.getText().contains(targetTextInDynamicTable)) {
+                        // System.out.println("\n -- Found the target text in dynamic table: " +
+                        // targetTextInDynamicTable);
 
-    WebElement dateInput = driver.findElement(By.id("txtDate")); 
-    dateInput.click();
-    Thread.sleep(2000);
+                    }
+                }
+                System.out.println();
+            }
 
-    By monthDropdown = By.className("ui-datepicker-month");
-    By yearDropdown = By.className("ui-datepicker-year");
+            ((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 500);");
 
-    Select yearSelect = new Select(driver.findElement(yearDropdown));
-    yearSelect.selectByVisibleText(expYear);
+            List<WebElement> headersDynamicTable = driver.findElements(
+                    By.xpath("//table[@id='taskTable']/thead/tr/th"));
 
-    String[] months = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-    String monthName = months[Integer.parseInt(expMonth) - 1];
+            Map<String, Integer> headerIndex = new HashMap<>();
 
-    Select monthSelect = new Select(driver.findElement(monthDropdown));
-    monthSelect.selectByVisibleText(monthName);
-        Thread.sleep(2000);
-    List<WebElement> days = driver.findElements(By.xpath("//table[@class='ui-datepicker-calendar']//a"));
-    for (WebElement d : days) {
-        if (d.getText().equals(expDay)) {
-            d.click();
-            Thread.sleep(2000);
-            break;
-        }
-    }
-// Date picker 3
-WebElement dateInput1 = driver.findElement(By.xpath("//div[@class=\"date-picker-box\"]//input[@id='start-date']"));
-JavascriptExecutor js = (JavascriptExecutor) driver;
-js.executeScript("arguments[0].click();", dateInput1);
-String dateValue1 = "2020-11-11"; 
-js.executeScript("arguments[0].value = arguments[1];", dateInput1, dateValue1);
-Thread.sleep(3000);
-WebElement dateInput2 = driver.findElement(By.xpath("//div[@class=\"date-picker-box\"]//input[@id='end-date']"));
-js.executeScript("arguments[0].click();", dateInput2);
-String dateValue2 = "2020-11-12"; 
-js.executeScript("arguments[0].value = arguments[1];", dateInput2, dateValue2);
-WebElement submitBtn = driver.findElement(By.xpath("//div[@class=\"date-picker-box\"]//button[@class='submit-btn']"));
-submitBtn.click();
-Thread.sleep(3000);
+            for (int i = 0; i < headersDynamicTable.size(); i++) {
+                String headerText = headersDynamicTable.get(i).getText().trim();
+                headerIndex.put(headerText, i + 1);
+            }
 
+            String chromeCpu = driver.findElement(
+                    By.xpath("//table[@id='taskTable']/tbody/tr[td[1]='Chrome']/td["
+                            + headerIndex.get("CPU (%)") + "]"))
+                    .getText();
+
+            String firefoxMemory = driver.findElement(
+                    By.xpath("//table[@id='taskTable']/tbody/tr[td[1]='Firefox']/td["
+                            + headerIndex.get("Memory (MB)") + "]"))
+                    .getText();
+
+            String chromeNetwork = driver.findElement(
+                    By.xpath("//table[@id='taskTable']/tbody/tr[td[1]='Chrome']/td["
+                            + headerIndex.get("Network (Mbps)") + "]"))
+                    .getText();
+
+            String firefoxDisk = driver.findElement(
+                    By.xpath("//table[@id='taskTable']/tbody/tr[td[1]='Firefox']/td["
+                            + headerIndex.get("Disk (MB/s)") + "]"))
+                    .getText();
+
+            System.out.println("CPU load of Chrome process: " + chromeCpu);
+            System.out.println("Memory Size of Firefox process: " + firefoxMemory);
+            System.out.println("Network speed of Chrome process: " + chromeNetwork);
+            System.out.println("Disk space of Firefox process: " + firefoxDisk);
+
+            // Paginated Web Table
+            String targetName = "Fitness Tracker";
+
+            boolean found = false;
+
+            for (int page = 1; page <= 4; page++) {
+
+                System.out.println("Checking Page: " + page);
+
+                driver.findElement(By.xpath("//a[text()='" + page + "']")).click();
+                Thread.sleep(800);
+
+                List<WebElement> rows = driver.findElements(By.xpath("//table[@id='productTable']/tbody/tr"));
+
+                for (WebElement row : rows) {
+
+                    String name = row.findElement(By.xpath("./td[2]")).getText().trim();
+
+                    if (name.equalsIgnoreCase(targetName)) {
+                        System.out.println("Found item: " + name);
+
+                        WebElement checkbox = row.findElement(By.xpath("./td[4]/input"));
+                        checkbox.click();
+
+                        System.out.println("Checkbox clicked for " + name);
+
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    break; // break page loop
+                }
+            }
+            if (!found) {
+                System.out.println("Item NOT found in any page.");
+            }
 
         } catch (TimeoutException te) {
             throw new RuntimeException("Timeout while filling form: " + te.getMessage());
@@ -178,7 +289,7 @@ Thread.sleep(3000);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted while waiting for focus shift", ie);
-            }
+        }
     }
 
     private static WebElement waitAndLocate(String xpath, String elementName) {
@@ -221,21 +332,35 @@ Thread.sleep(3000);
             }
         }
     }
-     private static int monthToNumber(String monthName) {
+
+    private static int monthToNumber(String monthName) {
         switch (monthName) {
-            case "January": return 1;
-            case "February": return 2;
-            case "March": return 3;
-            case "April": return 4;
-            case "May": return 5;
-            case "June": return 6;
-            case "July": return 7;
-            case "August": return 8;
-            case "September": return 9;
-            case "October": return 10;
-            case "November": return 11;
-            case "December": return 12;
-            default: return 0;
+            case "January":
+                return 1;
+            case "February":
+                return 2;
+            case "March":
+                return 3;
+            case "April":
+                return 4;
+            case "May":
+                return 5;
+            case "June":
+                return 6;
+            case "July":
+                return 7;
+            case "August":
+                return 8;
+            case "September":
+                return 9;
+            case "October":
+                return 10;
+            case "November":
+                return 11;
+            case "December":
+                return 12;
+            default:
+                return 0;
         }
     }
 }
