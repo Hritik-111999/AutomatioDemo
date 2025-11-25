@@ -401,7 +401,7 @@ public class BrowserAutomation {
                 writer.write("Test file content for automation testing");
                 writer.close();
             }
-            singleFileInput.sendKeys(filePath);
+             singleFileInput.sendKeys(filePath);
             Thread.sleep(500);
             
             WebElement singleFileForm = waitAndLocate("//form[@id='singleFileForm']//button", "single file upload button");
